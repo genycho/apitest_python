@@ -31,6 +31,20 @@ def get_be_baseurl(pytestconfig):
 def get_apikey():
     return '{my_api_key}'
 
+@pytest.fixture(scope="session")
+def read_testdata_secrets():
+    """ 
+    테스트에 사용되는 아이디, 비밀번호, API Key 등을 별도 json 파일(dataplatform.json)에 작성 후 최초 테스트 수행 시 읽어오는 fixture. 
+    해당 파일은 현재 프로젝트 폴더 경로 상위에 위치하여야 한다 
+    """
+    parent_dirname = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))  #현재 파일의 4depth 위(프로젝트 바깥) 경로를 얻어오기 
+    filename = os.path.join(parent_dirname,'test_data_secret.json')
+    try:
+        with open(filename, mode='r') as f:
+            return json.loads(f.read())
+    except FileNotFoundError:
+        raise APITestException(f"Failed to get the dataplatform env json file in {filename}")
+
 @pytest.fixture(scope="module")
 def get_dicom_uuid(get_be_baseurl, get_apikey, get_dirpath):
     # scope:module 는 module 파일별로 1회 수행 후 재사용된다
